@@ -1,53 +1,4 @@
 
-<?php
-require_once('../config.php');
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (
-        isset(
-            $_POST['idMember'],
-            $_POST['nomMembre'],
-            $_POST['prenomMembre'],
-            $_POST['emailMembre'],
-            $_POST['telephoneMembre'],
-            $_POST['roleMembre'],
-            $_POST['equipeMembre'],
-            $_POST['statutMembre']
-        )
-    ) {
-        $idMembre = $_POST['idMember'];
-        $nomMembre = $_POST['nomMembre'];
-        $prenomMembre = $_POST['prenomMembre'];
-        $emailMembre = $_POST['emailMembre'];
-        $telephoneMembre = $_POST['telephoneMembre'];
-        $roleMembre = $_POST['roleMembre'];
-        $equipeMembre = $_POST['equipeMembre'];
-        $statutMembre = $_POST['statutMembre'];
-
-        $requete = $connexion->prepare(
-            "INSERT INTO membre (Id, Nom, Prenom, Email, Telephone, Role, ID_Equipe, Statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        );
-        $requete->execute([$idMembre, $nomMembre, $prenomMembre, $emailMembre, $telephoneMembre, $roleMembre, $equipeMembre, $statutMembre]);
-
-        header('Location: index.php');
-        echo 'Membre ajouté avec succès!';
-    }
-
-    if (isset($_POST['nomEquipe'], $_POST['idEquipe'], $_POST['dateCreation'])) {
-        $nomEquipe = $_POST['nomEquipe'];
-        $idEquipe = $_POST['idEquipe'];
-        $dateCreation = $_POST['dateCreation'];
-
-        $requete = $connexion->prepare("INSERT INTO equipe (ID_Equipe, Nom_Equipe, Date_Creation) VALUES (?, ?, ?)");
-        $requete->execute([$idEquipe, $nomEquipe, $dateCreation]);
-
-        header('Location: index.php');
-        echo 'Équipe ajoutée avec succès!';
-    }
-}
-
-?>
-
 <!DOCTYPE html>
 <html lang="en" >
 <head>
@@ -120,69 +71,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<ul class="navbar">
 			<li style="list-style-type:none;"><a href="index.php">Home</a></li>
 			<li style="list-style-type:none;"><a href="addPage.php">Add</a></li>
-			<li style="list-style-type:none;"><a href="profiel.php">Profiel</a></li>
+			<li style="list-style-type:none;"><a href="profile.php">Profiel</a></li>
 			<li style="list-style-type:none;"><a href="../dist/sign.html">LogOut</a></li>
 		</ul>
 	</header>
 	<div class="container" id="container">
+		<!-- Form for adding a team -->
 		<div class="form-container sign-up-container">
-			<form action="#">
-				<div class="bg-white p-6 rounded-md shadow-md my-4 mx-auto max-w-2xl">
-					<h2 class="text-xl font-semibold mb-4">Ajouter un Équipe</h2>
-			
-					<form action="ajouter.php" method="post" class="space-y-4">
-						<label for="nomEquipe" class="block text-sm font-medium text-gray-700">Nom Équipe :</label>
-						<input type="text" id="nomEquipe" name="nomEquipe" class="w-full border p-2 rounded-md">
+			<form action="ajouter_equipe.php" method="post" class="space-y-4">
+				<h2 class="text-xl font-semibold mb-4">Ajouter une Équipe</h2>
+				<label for="nomEquipe" class="block text-sm font-medium text-gray-700">Nom Équipe :</label>
+				<input type="text" id="nomEquipe" name="nomEquipe" class="w-full border p-2 rounded-md">
+				
+				<label for="idScrumMaster" class="block text-sm font-medium text-gray-700">ID de Scrum master :</label>
+				<input type="text" id="idScrumMaster" name="idScrumMaster" class="w-full border p-2 rounded-md">
 
-						<label for="nomEquipe" class="block text-sm font-medium text-gray-700">L'Objectif D'Équipe :</label>
-						<input type="text" id="nomEquipe" name="nomEquipe" class="w-full border p-2 rounded-md">
-			
-						<label for="idEquipe" class="block text-sm font-medium text-gray-700">ID Équipe :</label>
-						<input type="text" id="idEquipe" name="idEquipe" class="w-full border p-2 rounded-md">
-
-						<label for="idEquipe" class="block text-sm font-medium text-gray-700">ID de projet affecter :</label>
-						<input type="text" id="idEquipe" name="idEquipe" class="w-full border p-2 rounded-md">
-			
-						<label for="dateCreation" class="block text-sm font-medium text-gray-700">Date de Création :</label>
-						<input type="date" id="dateCreation" name="dateCreation" class="w-full border p-2 rounded-md">
-			
-						<button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Ajouter Équipe</button>
-					</form>
-				</div>
+				<button type="submit" name="addEquipe" class="bg-blue-500 text-white px-4 py-2 rounded-md">Ajouter Équipe</button>
 			</form>
 		</div>
+
+		<!-- Form for adding a member -->
 		<div class="form-container sign-in-container">
-			<form action="#">
-				<div class="bg-white p-6 rounded-md shadow-md my-4 mx-auto max-w-2xl">
-					<h2 class="text-xl font-semibold mb-4">Ajouter un Membre</h2>
-			
-					<form action="ajouter.php" method="post" class="space-y-4">
-					<label for="idMembre" class="block text-sm font-medium text-gray-700">Id :</label>
-						<input type="text" id="idMembre" name="idMembre" class="w-full border p-2 rounded-md">
-			
-						<label for="nomMembre" class="block text-sm font-medium text-gray-700">Nom :</label>
-						<input type="text" id="nomMembre" name="nomMembre" class="w-full border p-2 rounded-md">
-			
-						<label for="prenomMembre" class="block text-sm font-medium text-gray-700">Prénom :</label>
-						<input type="text" id="prenomMembre" name="prenomMembre" class="w-full border p-2 rounded-md">
-			
-						<label for="emailMembre" class="block text-sm font-medium text-gray-700">Email :</label>
-						<input type="email" id="emailMembre" name="emailMembre" class="w-full border p-2 rounded-md">
-			
-						<label for="telephoneMembre" class="block text-sm font-medium text-gray-700">Téléphone :</label>
-						<input type="tel" id="telephoneMembre" name="telephoneMembre" class="w-full border p-2 rounded-md">
-			
-						<label for="equipeMembre" class="block text-sm font-medium text-gray-700">ID Équipe :</label>
-						<input type="text" id="equipeMembre" name="equipeMembre" class="w-full border p-2 rounded-md">
-			
-						<label for="statutMembre" class="block text-sm font-medium text-gray-700">Statut :</label>
-						<input type="text" id="statutMembre" name="statutMembre" class="w-full border p-2 rounded-md">
-			
-						<button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Ajouter Membre</button>
-					</form>
-				</div>
+			<form action="ajouter.php" method="post" class="space-y-4">
+				<h2 class="text-xl font-semibold mb-4">Ajouter un Membre</h2>
+				<label for="nomMembre" class="block text-sm font-medium text-gray-700">Nom :</label>
+				<input type="text" id="nomMembre" name="nomMembre" class="w-full border p-2 rounded-md">
+				
+				<label for="prenomMembre" class="block text-sm font-medium text-gray-700">Prénom :</label>
+				<input type="text" id="prenomMembre" name="prenomMembre" class="w-full border p-2 rounded-md">
+				
+				<label for="emailMembre" class="block text-sm font-medium text-gray-700">Email :</label>
+				<input type="email" id="emailMembre" name="emailMembre" class="w-full border p-2 rounded-md">
+				
+				<label for="equipeMembre" class="block text-sm font-medium text-gray-700">ID Équipe :</label>
+				<input type="text" id="equipeMembre" name="equipeMembre" class="w-full border p-2 rounded-md">
+
+				<label for="dateNaissanceMembre" class="block text-sm font-medium text-gray-700">Date de naissance de membre :</label>
+				<input type="date" id="dateNaissanceMembre" name="dateNaissanceMembre" class="w-full border p-2 rounded-md">
+
+				<button type="submit" name="addMember" class="bg-blue-500 text-white px-4 py-2 rounded-md">Ajouter Membre</button>
 			</form>
 		</div>
+
 		<div class="overlay-container">
 			<div class="overlay">
 				<div class="overlay-panel overlay-left">

@@ -1,25 +1,66 @@
 <?php
-
-session_start();
 require_once('../config.php');
+session_start();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+// Traitement de l'inscription
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
     $nom = $_POST['nom'];
-    $motDePasse = $_POST['motDePasse'];
+    $prenom = $_POST['prenom'];
+    $email = $_POST['email'];
+    $dateNaissance = $_POST['dateNaissance'];
+    $motDePasse = password_hash($_POST['motDePasse'], PASSWORD_DEFAULT);
+    $role = $_POST['role'];
 
-    $sql = "SELECT MotDePasse FROM Utilisateurs WHERE Nom = :nom";
-	$stmt = $conn->prepare($sql);
-	$stmt->bindParam(':nom', $nom);
-	$stmt->execute();
+    try {
+        $sql = "INSERT INTO Utilisateurs (Nom, Prenom, Email, DateNaissance, MotDePasse, Role) VALUES (:nom, :prenom, :email, :dateNaissance, :motDePasse, :role)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':nom', $nom);
+        $stmt->bindParam(':prenom', $prenom);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':dateNaissance', $dateNaissance);
+        $stmt->bindParam(':motDePasse', $motDePasse);
+        $stmt->bindParam(':role', $role);
 
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($result && password_verify($motDePasse, $result['MotDePasse'])) {
-        $_SESSION['nom'] = $nom;
-        $_SESSION['data'] = $user;
+        $stmt->execute();
 
-        echo "Authentification réussie. Bienvenue, $nom!";
-    } else {
-        echo "Invalid username or password";
+        echo "Inscription réussie !";
+    } catch (PDOException $e) {
+        echo "Erreur : " . $e->getMessage();
+    }
+}
+
+// Traitement de la connexion
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
+    $nom = $_POST['loginNom'];
+    $motDePasse = $_POST['loginMotDePasse'];
+
+    try {
+        $sql = "SELECT * FROM Utilisateurs WHERE Nom = :nom";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':nom', $nom);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (count($result) > 0 && password_verify($motDePasse, $result['MotDePasse'])) {
+            $_SESSION['data'] = $result;
+
+            // Redirection en fonction du rôle
+            if ($_SESSION['data']['Role'] == 'ProductOwner') {
+                header('Location: ../Product_Owner/index.php');
+                exit();
+            } elseif ($_SESSION['data']['Role'] == 'ScrumMaster') {
+                header('Location: ../Scrum_Master/index.php');
+                exit();
+            } else {
+                header('Location: ../membre/index.php');
+                exit();
+            }
+        } else {
+            echo "Nom d'utilisateur ou mot de passe incorrect.";
+        }
+    } catch (PDOException $e) {
+        echo "Erreur : " . $e->getMessage();
     }
 }
 ?>
@@ -37,22 +78,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 <div class="container" id="container">
 	<div class="form-container sign-up-container">
-		<form action="#" method="POST">
+		<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
 			<h1>Create Account</h1>
-			<div class="social-container">
-				<a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-				<a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-				<a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
-			</div>
-			<span>or use your email for registration</span>
-			<input type="text" placeholder="Name" name="nom" />
-			<input type="text" placeholder="Role" />
-			<input type="password" placeholder="Password" name="motDePasse" />
-			<button><a href="../Scrum_Master/dashboard/index.php">Sign Up</a></button>
+			
+			<input type="text" name="nom" placeholder="Nom" required>
+
+			<input type="text" name="prenom" placeholder="Prenom" required>
+
+			<input type="email" name="email" placeholder="Email" required>
+
+			<input type="date" name="dateNaissance" placeholder="Date de naissance" required>
+
+			<input type="password" name="motDePasse" placeholder="Mot de passe" required>
+			<select class="select" name="role" required>
+				<option value="" selected disabled >Role</option>
+				<option value="member">Membre</option>
+				<option value="ProductOwner">Product Owner</option>
+				<option value="ScrumMaster">Scrum Master</option>
+			</select>
+
+			<button type="submit" name="register">S'inscrire</button>
 		</form>
 	</div>
 	<div class="form-container sign-in-container">
-		<form method="POST">
+		<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
 			<h1>Sign in</h1>
 			<div class="social-container">
 				<a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
@@ -60,10 +109,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				<a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
 			</div>
 			<span>or use your account</span>
-			<input type="text" placeholder="name" name="nom" />
-			<input type="password" placeholder="Password" name="motDePasse" />
-			<a href="#">Forgot your password?</a>
-			<button name="submit" type="submit">Sign In</button>
+			<input type="text" name="loginNom" placeholder="Nom" required>
+
+			<input type="password" name="loginMotDePasse" placeholder="Mo de passe" required>
+
+			<button type="submit" name="login">Se Connecter</button>
 		</form>
 	</div>
 	<div class="overlay-container">

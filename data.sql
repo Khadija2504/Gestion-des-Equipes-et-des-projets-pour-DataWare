@@ -16,7 +16,9 @@ CREATE TABLE Projets (
     Nom VARCHAR(100) NOT NULL,
     Description TEXT,
     ScrumMasterID INT,
-    FOREIGN KEY (ScrumMasterID) REFERENCES Utilisateurs(UtilisateurID) ON DELETE SET NULL
+    EquipeID INT,
+    FOREIGN KEY (ScrumMasterID) REFERENCES Utilisateurs(UtilisateurID) ON DELETE SET NULL,
+    FOREIGN KEY (EquipeID) REFERENCES Equipes(EquipeID) ON DELETE SET NULL
 );
 
 CREATE TABLE Equipes (
@@ -25,6 +27,26 @@ CREATE TABLE Equipes (
     ScrumMasterID INT,
     FOREIGN KEY (ScrumMasterID) REFERENCES Utilisateurs(UtilisateurID) ON DELETE SET NULL
 );
+
+ALTER TABLE Utilisateurs
+ADD COLUMN EquipeID INT,
+ADD CONSTRAINT fk_utilisateurs_equipes FOREIGN KEY (EquipeID) REFERENCES Equipes(EquipeID) ON DELETE SET NULL;
+
+
+
+ALTER TABLE Projets
+DROP FOREIGN KEY fk_utilisateurs_equipes;
+
+ALTER TABLE Projets
+ADD CONSTRAINT fk_projets_equipes FOREIGN KEY (EquipeID) REFERENCES Equipes(EquipeID) ON DELETE CASCADE;
+
+
+ALTER TABLE Projets
+DROP FOREIGN KEY fk_projets_equipes;
+
+ALTER TABLE Projets
+ADD CONSTRAINT fk_projets_equipes FOREIGN KEY (EquipeID) REFERENCES Equipes(EquipeID) ON DELETE CASCADE;
+
 
 -- les donnes:
 
@@ -36,9 +58,9 @@ INSERT INTO Utilisateurs (Nom, Prenom, Email, DateNaissance, MotDePasse, Role) V
     ('Johnson', 'Bob', 'bob.johnson@email.com', '1988-09-10', 'bob', 'ScrumMaster'),
     ('shizo', 'shizona', 'shizo.shizona@email.com', '1988-09-10', 'shizona', 'ScrumMaster');
 
-INSERT INTO Projets (Nom, Description, ScrumMasterID) VALUES
-    ('Projet A', 'Description du projet A', 5),
-    ('Projet B', 'Description du projet B', 6);
+INSERT INTO Projets (Nom, Description, ScrumMasterID, EquipeID) VALUES
+    ('Projet A', 'Description du projet A', 5, 1),
+    ('Projet B', 'Description du projet B', 6, 2);
 
 INSERT INTO Equipes (Nom, ScrumMasterID) VALUES
     ('Équipe X', 5),
